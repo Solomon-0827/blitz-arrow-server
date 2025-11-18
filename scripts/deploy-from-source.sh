@@ -228,6 +228,42 @@ echo "🧹 清理残留资源..."
 docker rm -f ppanel-mysql ppanel-redis ppanel-server 2>/dev/null || true
 docker network rm ppanel-network 2>/dev/null || true
 
+# 检查配置文件
+CONFIG_FILE="${PROJECT_ROOT}/etc/ppanel.yaml"
+if [ ! -f "$CONFIG_FILE" ] || [ ! -s "$CONFIG_FILE" ]; then
+    echo "⚠️  检测到首次部署，创建初始配置文件..."
+    mkdir -p "${PROJECT_ROOT}/etc"
+    cat > "$CONFIG_FILE" << 'CFGEOF'
+# PPanel 配置文件
+# 首次部署自动生成，请访问 http://YOUR_IP:8080/init 完成初始化
+
+db:
+  host: mysql
+  port: 3306
+  user: ppanel
+  password: ppanel_password
+  database: ppanel
+
+redis:
+  host: redis
+  port: 6379
+  password: ""
+  db: 0
+
+server:
+  port: 8080
+  mode: release
+
+jwt:
+  secret: change-this-secret-in-production
+  expire: 86400
+
+log:
+  level: info
+CFGEOF
+    echo "✓ 初始配置文件已创建"
+fi
+
 # 启动新容器（docker-compose 会自动创建网络）
 echo "🚀 启动应用..."
 docker compose -f /tmp/docker-compose-server.yml up -d
