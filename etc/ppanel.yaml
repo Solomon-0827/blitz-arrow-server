@@ -37,3 +37,6 @@ Redis:
     Host: redis:6379
     Pass: ""
     DB: 0
+Administrator:
+    Email: admin@ppanel.dev
+    Password: admin123456
