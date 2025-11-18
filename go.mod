@@ -1,6 +1,6 @@
 module github.com/perfect-panel/server
 
-go 1.23.3
+go 1.23
 
 require (
 	github.com/GUAIK-ORG/go-snowflake v0.0.0-20200116064823-220c4260e85f
