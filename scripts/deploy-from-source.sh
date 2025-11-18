@@ -137,7 +137,7 @@ echo "========================================="
 echo ""
 
 # 创建 docker-compose 配置
-cat > /tmp/docker-compose-server.yml << 'EOF'
+cat > /tmp/docker-compose-server.yml << EOF
 version: '3.8'
 
 services:
@@ -197,6 +197,8 @@ services:
     environment:
       - PPANEL_DB=ppanel:ppanel_password@tcp(mysql:3306)/ppanel
       - PPANEL_REDIS=redis://redis:6379
+    volumes:
+      - ${PROJECT_ROOT}/etc/ppanel.yaml:/app/etc/ppanel.yaml
     depends_on:
       mysql:
         condition: service_healthy
@@ -234,32 +236,45 @@ if [ ! -f "$CONFIG_FILE" ] || [ ! -s "$CONFIG_FILE" ]; then
     echo "⚠️  检测到首次部署，创建初始配置文件..."
     mkdir -p "${PROJECT_ROOT}/etc"
     cat > "$CONFIG_FILE" << 'CFGEOF'
-# PPanel 配置文件
-# 首次部署自动生成，请访问 http://YOUR_IP:8080/init 完成初始化
-
-db:
-  host: mysql
-  port: 3306
-  user: ppanel
-  password: ppanel_password
-  database: ppanel
-
-redis:
-  host: redis
-  port: 6379
-  password: ""
-  db: 0
-
-server:
-  port: 8080
-  mode: release
-
-jwt:
-  secret: change-this-secret-in-production
-  expire: 86400
-
-log:
-  level: info
+Host: 0.0.0.0
+Port: 8080
+TLS:
+    Enable: false
+    CertFile: ""
+    KeyFile: ""
+Debug: false
+JwtAuth:
+    AccessSecret: change-this-secret-in-production-please
+    AccessExpire: 604800
+Logger:
+    ServiceName: PPanel
+    Mode: file
+    Encoding: json
+    TimeFormat: "2006-01-02 15:04:05.000"
+    Path: logs
+    Level: info
+    MaxContentLength: 0
+    Compress: false
+    Stat: true
+    KeepDays: 0
+    StackCooldownMillis: 100
+    MaxBackups: 0
+    MaxSize: 0
+    Rotation: daily
+    FileTimeFormat: 2006-01-02T15:04:05.000Z07:00
+MySQL:
+    Addr: mysql:3306
+    Username: ppanel
+    Password: ppanel_password
+    Dbname: ppanel
+    Config: charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai
+    MaxIdleConns: 10
+    MaxOpenConns: 10
+    SlowThreshold: 1000
+Redis:
+    Host: redis:6379
+    Pass: ""
+    DB: 0
 CFGEOF
     echo "✓ 初始配置文件已创建"
 fi
