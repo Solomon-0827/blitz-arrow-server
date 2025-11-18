@@ -232,51 +232,12 @@ docker network rm ppanel-network 2>/dev/null || true
 
 # 检查配置文件
 CONFIG_FILE="${PROJECT_ROOT}/etc/ppanel.yaml"
-if [ ! -f "$CONFIG_FILE" ] || [ ! -s "$CONFIG_FILE" ]; then
-    echo "⚠️  检测到首次部署，创建初始配置文件..."
-    mkdir -p "${PROJECT_ROOT}/etc"
-    cat > "$CONFIG_FILE" << 'CFGEOF'
-Host: 0.0.0.0
-Port: 8080
-TLS:
-    Enable: false
-    CertFile: ""
-    KeyFile: ""
-Debug: false
-JwtAuth:
-    AccessSecret: change-this-secret-in-production-please
-    AccessExpire: 604800
-Logger:
-    ServiceName: PPanel
-    Mode: file
-    Encoding: json
-    TimeFormat: "2006-01-02 15:04:05.000"
-    Path: logs
-    Level: info
-    MaxContentLength: 0
-    Compress: false
-    Stat: true
-    KeepDays: 0
-    StackCooldownMillis: 100
-    MaxBackups: 0
-    MaxSize: 0
-    Rotation: daily
-    FileTimeFormat: 2006-01-02T15:04:05.000Z07:00
-MySQL:
-    Addr: mysql:3306
-    Username: ppanel
-    Password: ppanel_password
-    Dbname: ppanel
-    Config: charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai
-    MaxIdleConns: 10
-    MaxOpenConns: 10
-    SlowThreshold: 1000
-Redis:
-    Host: redis:6379
-    Pass: ""
-    DB: 0
-CFGEOF
-    echo "✓ 初始配置文件已创建"
+if [ -f "$CONFIG_FILE" ] && [ -s "$CONFIG_FILE" ]; then
+    echo "✓ 使用已有配置文件: etc/ppanel.yaml"
+else
+    echo "⚠️  配置文件不存在或为空！"
+    echo "   请确保 etc/ppanel.yaml 存在且包含正确配置"
+    exit 1
 fi
 
 # 启动新容器（docker-compose 会自动创建网络）

@@ -6,7 +6,7 @@ TLS:
     KeyFile: ""
 Debug: false
 JwtAuth:
-    AccessSecret: b4348b27-b150-4a75-be57-65afae7adb4c
+    AccessSecret: change-this-secret-in-production-please
     AccessExpire: 604800
 Logger:
     ServiceName: PPanel
@@ -25,15 +25,15 @@ Logger:
     Rotation: daily
     FileTimeFormat: 2006-01-02T15:04:05.000Z07:00
 MySQL:
-    Addr: localhost:3306
-    Username: root
-    Password: ppanel123
+    Addr: mysql:3306
+    Username: ppanel
+    Password: ppanel_password
     Dbname: ppanel
     Config: charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai
     MaxIdleConns: 10
     MaxOpenConns: 10
     SlowThreshold: 1000
 Redis:
-    Host: 127.0.0.1:6379
+    Host: redis:6379
     Pass: ""
     DB: 0
