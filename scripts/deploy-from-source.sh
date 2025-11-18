@@ -111,6 +111,26 @@ docker build \
 echo "✓ Docker 镜像构建成功"
 echo ""
 
+# 清理旧镜像，只保留最新的 2 个
+echo "🧹 清理旧镜像（保留最新 2 个）..."
+OLD_IMAGES=$(docker images "ppanel-server" --format "{{.ID}} {{.CreatedAt}}" | \
+  sort -k2 -r | \
+  awk 'NR>2 {print $1}')
+
+if [ -n "$OLD_IMAGES" ]; then
+    for img_id in $OLD_IMAGES; do
+        echo "   删除旧镜像: $img_id"
+        docker rmi -f $img_id 2>/dev/null || true
+    done
+    echo "   ✓ 清理完成"
+else
+    echo "   ✓ 无需清理"
+fi
+
+# 清理悬空镜像
+docker image prune -f >/dev/null 2>&1 || true
+echo ""
+
 echo "========================================="
 echo "第三步：部署应用"
 echo "========================================="
@@ -203,20 +223,12 @@ EOF
 echo "🛑 停止旧容器..."
 docker compose -f /tmp/docker-compose-server.yml down 2>/dev/null || true
 
-# 强制删除可能残留的容器
-echo "🧹 清理残留容器..."
+# 强制删除可能残留的容器和网络
+echo "🧹 清理残留资源..."
 docker rm -f ppanel-mysql ppanel-redis ppanel-server 2>/dev/null || true
+docker network rm ppanel-network 2>/dev/null || true
 
-# 清理可能存在的网络冲突
-echo "🔧 检查网络配置..."
-if docker network inspect ppanel-network >/dev/null 2>&1; then
-    echo "   网络 ppanel-network 已存在，将复用"
-else
-    echo "   创建网络 ppanel-network"
-    docker network create ppanel-network 2>/dev/null || true
-fi
-
-# 启动新容器
+# 启动新容器（docker-compose 会自动创建网络）
 echo "🚀 启动应用..."
 docker compose -f /tmp/docker-compose-server.yml up -d
 

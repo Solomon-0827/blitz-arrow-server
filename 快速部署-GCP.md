@@ -1,6 +1,6 @@
 # ⚡ 快速部署 - GCP 虚拟机
 
-VM IP: **136.110.11.215**
+VM IP: **34.177.90.11**
 
 ---
 
@@ -8,7 +8,7 @@ VM IP: **136.110.11.215**
 
 ```bash
 # 1. SSH 连接虚拟机
-ssh user@136.110.11.215
+ssh user@34.177.90.11
 
 # 2. 克隆代码
 cd ~
@@ -19,7 +19,7 @@ cd blitz-arrow-server
 ./scripts/deploy-from-source.sh
 
 # 4. 初始化（浏览器访问）
-# http://136.110.11.215:8080/init
+# http://34.177.90.11:8080/init
 # MySQL: mysql:3306, ppanel/ppanel_password, ppanel
 # Redis: redis:6379, 无密码
 ```
@@ -52,9 +52,9 @@ gcloud compute firewall-rules create allow-ppanel-all \
 
 ## 🌐 访问地址
 
-- Admin: http://136.110.11.215:3000
-- User: http://136.110.11.215:3001
-- API: http://136.110.11.215:8080
+- Admin: http://34.177.90.11:3000
+- User: http://34.177.90.11:3001
+- API: http://34.177.90.11:8080
 
 ---
 
