@@ -1,0 +1,39 @@
+Host: 0.0.0.0
+Port: 8080
+TLS:
+    Enable: false
+    CertFile: ""
+    KeyFile: ""
+Debug: false
+JwtAuth:
+    AccessSecret: b4348b27-b150-4a75-be57-65afae7adb4c
+    AccessExpire: 604800
+Logger:
+    ServiceName: PPanel
+    Mode: file
+    Encoding: json
+    TimeFormat: "2006-01-02 15:04:05.000"
+    Path: logs
+    Level: info
+    MaxContentLength: 0
+    Compress: false
+    Stat: true
+    KeepDays: 0
+    StackCooldownMillis: 100
+    MaxBackups: 0
+    MaxSize: 0
+    Rotation: daily
+    FileTimeFormat: 2006-01-02T15:04:05.000Z07:00
+MySQL:
+    Addr: localhost:3306
+    Username: root
+    Password: ppanel123
+    Dbname: ppanel
+    Config: charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai
+    MaxIdleConns: 10
+    MaxOpenConns: 10
+    SlowThreshold: 1000
+Redis:
+    Host: 127.0.0.1:6379
+    Pass: ""
+    DB: 0
