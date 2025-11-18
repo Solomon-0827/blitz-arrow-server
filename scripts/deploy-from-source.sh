@@ -25,16 +25,31 @@ fi
 
 PROJECT_ROOT=$(pwd)
 
-# 检查 Docker 是否运行
+# 检查并安装 Docker
 if ! docker info > /dev/null 2>&1; then
-    echo "❌ Docker 未运行，请先安装 Docker"
-    exit 1
+    echo "📦 Docker 未安装，正在安装..."
+    curl -fsSL https://get.docker.com -o get-docker.sh
+    sudo sh get-docker.sh
+    sudo usermod -aG docker $USER
+    echo "✓ Docker 安装完成"
+    echo "⚠️  请退出并重新登录以使 Docker 组权限生效，然后重新运行此脚本"
+    exit 0
 fi
 
-# 检查 Go 是否安装
+echo "✓ Docker 已安装"
+
+# 检查并安装 Go
 if ! command -v go &> /dev/null; then
-    echo "❌ Go 未安装，请先安装 Go"
-    exit 1
+    echo "📦 Go 未安装，正在安装..."
+    sudo apt update
+    sudo apt install -y golang-go
+    
+    # 验证安装
+    if ! command -v go &> /dev/null; then
+        echo "❌ Go 安装失败，请手动安装"
+        exit 1
+    fi
+    echo "✓ Go 安装完成"
 fi
 
 echo "✓ Go 版本: $(go version)"
