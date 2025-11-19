@@ -58,7 +58,7 @@ services:
       - PPANEL_DB=${MYSQL_USER:-ppanel}:${MYSQL_PASSWORD:-ppanel_password}@tcp(mysql:3306)/${MYSQL_DATABASE:-ppanel}
       - PPANEL_REDIS=redis://redis:6379
     volumes:
-      - ./etc/ppanel.yaml:/app/etc/ppanel.yaml
+      - ../etc/ppanel.yaml:/app/etc/ppanel.yaml
     depends_on:
       mysql:
         condition: service_healthy
