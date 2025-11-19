@@ -136,94 +136,29 @@ echo "第三步：部署应用"
 echo "========================================="
 echo ""
 
-# 创建 docker-compose 配置
-cat > /tmp/docker-compose-server.yml << EOF
-version: '3.8'
+# 使用项目中的 docker-compose 配置文件
+COMPOSE_FILE="${PROJECT_ROOT}/deploy/docker-compose.prod.yml"
 
-services:
-  mysql:
-    image: mysql:8.0
-    container_name: ppanel-mysql
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: ppanel_root_password
-      MYSQL_DATABASE: ppanel
-      MYSQL_USER: ppanel
-      MYSQL_PASSWORD: ppanel_password
-    ports:
-      - "3306:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
-    command: --default-authentication-plugin=mysql_native_password
-    networks:
-      - ppanel-network
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 5s
-      retries: 10
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+if [ ! -f "$COMPOSE_FILE" ]; then
+    echo "❌ 配置文件不存在: $COMPOSE_FILE"
+    exit 1
+fi
 
-  redis:
-    image: redis:7.0
-    container_name: ppanel-redis
-    restart: always
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    command: redis-server --appendonly yes
-    networks:
-      - ppanel-network
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      timeout: 5s
-      retries: 10
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+echo "✓ 使用配置文件: deploy/docker-compose.prod.yml"
+echo ""
 
-  server:
-    image: ppanel-server:local
-    container_name: ppanel-server
-    restart: always
-    ports:
-      - "8080:8080"
-    environment:
-      - PPANEL_DB=ppanel:ppanel_password@tcp(mysql:3306)/ppanel
-      - PPANEL_REDIS=redis://redis:6379
-    volumes:
-      - ${PROJECT_ROOT}/etc/ppanel.yaml:/app/etc/ppanel.yaml
-    depends_on:
-      mysql:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - ppanel-network
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-
-volumes:
-  mysql_data:
-  redis_data:
-
-networks:
-  ppanel-network:
-    name: ppanel-network
-EOF
+# 设置环境变量（GCP 固定值）
+export MYSQL_ROOT_PASSWORD=ppanel_root_password
+export MYSQL_DATABASE=ppanel
+export MYSQL_USER=ppanel
+export MYSQL_PASSWORD=ppanel_password
+export MYSQL_PORT=3306
+export REDIS_PORT=6379
+export SERVER_PORT=8080
 
 # 停止旧容器
 echo "🛑 停止旧容器..."
-docker compose -f /tmp/docker-compose-server.yml down 2>/dev/null || true
+docker compose -f "$COMPOSE_FILE" down 2>/dev/null || true
 
 # 强制删除可能残留的容器和网络
 echo "🧹 清理残留资源..."
@@ -242,7 +177,7 @@ fi
 
 # 启动新容器（docker-compose 会自动创建网络）
 echo "🚀 启动应用..."
-docker compose -f /tmp/docker-compose-server.yml up -d
+docker compose -f "$COMPOSE_FILE" up -d
 
 # 等待容器启动
 echo "⏳ 等待容器启动（MySQL 初始化需要约 30 秒）..."
@@ -253,14 +188,14 @@ echo ""
 echo "========================================="
 echo "📊 容器状态"
 echo "========================================="
-docker compose -f /tmp/docker-compose-server.yml ps
+docker compose -f "$COMPOSE_FILE" ps
 
 # 显示日志
 echo ""
 echo "========================================="
 echo "📝 最近日志"
 echo "========================================="
-docker compose -f /tmp/docker-compose-server.yml logs --tail=30 server
+docker compose -f "$COMPOSE_FILE" logs --tail=30 server
 
 echo ""
 echo "========================================="
@@ -282,14 +217,9 @@ echo "   Redis 端口: 6379"
 echo "   Redis 密码: (留空)"
 echo ""
 echo "📝 管理命令："
-echo "   查看日志: docker compose -f /tmp/docker-compose-server.yml logs -f"
-echo "   查看服务日志: docker compose -f /tmp/docker-compose-server.yml logs -f server"
-echo "   重启应用: docker compose -f /tmp/docker-compose-server.yml restart"
-echo "   停止应用: docker compose -f /tmp/docker-compose-server.yml down"
+echo "   查看日志: docker compose -f deploy/docker-compose.prod.yml logs -f"
+echo "   查看服务日志: docker compose -f deploy/docker-compose.prod.yml logs -f server"
+echo "   重启应用: docker compose -f deploy/docker-compose.prod.yml restart"
+echo "   停止应用: docker compose -f deploy/docker-compose.prod.yml down"
 echo "   更新应用: cd $PROJECT_ROOT && ./scripts/deploy-from-source.sh"
-echo ""
-echo "💡 提示："
-echo "   1. docker-compose 配置已保存到 /tmp/docker-compose-server.yml"
-echo "   2. 首次部署请访问 http://${VM_IP}:8080/init 完成初始化"
-echo "   3. 数据持久化在 Docker volumes 中"
 echo ""

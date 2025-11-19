@@ -15,6 +15,8 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
     command: --default-authentication-plugin=mysql_native_password
+    networks:
+      - ppanel-network
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       timeout: 5s
@@ -34,6 +36,8 @@ services:
     volumes:
       - redis_data:/data
     command: redis-server --appendonly yes
+    networks:
+      - ppanel-network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       timeout: 5s
@@ -53,11 +57,15 @@ services:
     environment:
       - PPANEL_DB=${MYSQL_USER:-ppanel}:${MYSQL_PASSWORD:-ppanel_password}@tcp(mysql:3306)/${MYSQL_DATABASE:-ppanel}
       - PPANEL_REDIS=redis://redis:6379
+    volumes:
+      - ./etc/ppanel.yaml:/app/etc/ppanel.yaml
     depends_on:
       mysql:
         condition: service_healthy
       redis:
         condition: service_healthy
+    networks:
+      - ppanel-network
     logging:
       driver: "json-file"
       options:
@@ -69,6 +77,6 @@ volumes:
   redis_data:
 
 networks:
-  default:
+  ppanel-network:
     name: ppanel-network
 
